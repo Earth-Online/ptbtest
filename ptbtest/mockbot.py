@@ -23,7 +23,7 @@
 import functools
 import logging
 import warnings
-
+from  queue import Queue
 import time
 
 from telegram import (User, ReplyMarkup, TelegramObject)
@@ -65,7 +65,7 @@ class Mockbot(TelegramObject):
         self._updates = []
         self.bot = None
         self._username = username
-        self._sendmessages = []
+        self._sendmessages = Queue()
         from .messagegenerator import MessageGenerator
         from .chatgenerator import ChatGenerator
         self.mg = MessageGenerator(bot=self)
@@ -86,7 +86,7 @@ class Mockbot(TelegramObject):
         """
         Resets the ``sent_messages`` property to an empty list.
         """
-        self._sendmessages = []
+        self._sendmessages = Queue()
 
     def info(func):
         @functools.wraps(func)
@@ -142,7 +142,7 @@ class Mockbot(TelegramObject):
                 else:
                     data['reply_markup'] = reply_markup
             data['method'] = func.__name__
-            self._sendmessages.append(data)
+            self._sendmessages.put(data)
             if data['method'] in ['sendChatAction']:
                 return True
             dat = kwargs.copy()
@@ -501,7 +501,7 @@ class Mockbot(TelegramObject):
             data['switch_pm_parameter'] = switch_pm_parameter
         data['method'] = "answerInlineQuery"
 
-        self._sendmessages.append(data)
+        self._sendmessages.put(data)
 
     def getUserProfilePhotos(self,
                              user_id,
@@ -518,27 +518,27 @@ class Mockbot(TelegramObject):
 
         data['method'] = "getUserProfilePhotos"
 
-        self._sendmessages.append(data)
+        self._sendmessages.put(data)
 
     def getFile(self, file_id, timeout=None, **kwargs):
         data = {'file_id': file_id}
 
         data['method'] = "getFile"
-        self._sendmessages.append(data)
+        self._sendmessages.put(data)
 
     def kickChatMember(self, chat_id, user_id, timeout=None, **kwargs):
         data = {'chat_id': chat_id, 'user_id': user_id}
 
         data['method'] = "kickChatMember"
 
-        self._sendmessages.append(data)
+        self._sendmessages.put(data)
 
     def unbanChatMember(self, chat_id, user_id, timeout=None, **kwargs):
         data = {'chat_id': chat_id, 'user_id': user_id}
 
         data['method'] = "unbanChatMember"
 
-        self._sendmessages.append(data)
+        self._sendmessages.put(data)
 
     def answerCallbackQuery(self,
                             callback_query_id,
@@ -561,7 +561,7 @@ class Mockbot(TelegramObject):
 
         data['method'] = "answerCallbackQuery"
 
-        self._sendmessages.append(data)
+        self._sendmesages.put(data)
 
     @message
     def editMessageText(self,
@@ -678,35 +678,35 @@ class Mockbot(TelegramObject):
 
         data['method'] = "leaveChat"
 
-        self._sendmessages.append(data)
+        self._sendmesages.put(data)
 
     def getChat(self, chat_id, timeout=None, **kwargs):
         data = {'chat_id': chat_id}
 
         data['method'] = "getChat"
 
-        self._sendmessages.append(data)
+        self._sendmesages.put(data)
 
     def getChatAdministrators(self, chat_id, timeout=None, **kwargs):
         data = {'chat_id': chat_id}
 
         data['method'] = "getChatAdministrators"
 
-        self._sendmessages.append(data)
+        self._sendmesages.put(data)
 
     def getChatMembersCount(self, chat_id, timeout=None, **kwargs):
         data = {'chat_id': chat_id}
 
         data['method'] = "getChatMembersCount"
 
-        self._sendmessages.append(data)
+        self._sendmesages.put(data)
 
     def getChatMember(self, chat_id, user_id, timeout=None, **kwargs):
         data = {'chat_id': chat_id, 'user_id': user_id}
 
         data['method'] = "getChatMember"
 
-        self._sendmessages.append(data)
+        self._sendmesages.put(data)
 
     def setGameScore(self,
                      user_id,
@@ -741,7 +741,7 @@ class Mockbot(TelegramObject):
                     'edit_message is ignored when disable_edit_message is used')
 
         data['method'] = "setGameScore"
-        self._sendmessages.append(data)
+        self._sendmesages.put(data)
 
     def getGameHighScores(self,
                           user_id,
@@ -761,7 +761,7 @@ class Mockbot(TelegramObject):
 
         data['method'] = "getGameHighScores"
 
-        self._sendmessages.append(data)
+        self._sendmesages.put(data)
 
     @staticmethod
     def de_json(data, bot):
